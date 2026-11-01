@@ -593,79 +593,70 @@ async function handleRequest(req, res) {
     // 8. Telegram Bot Webhook: POST /api/telegram-webhook
     if (pathname === '/api/telegram-webhook' && req.method === 'POST') {
       const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-      getRequestBody(req).then(async (bodyData) => {
-        try {
-          const update = typeof bodyData === 'string' ? JSON.parse(bodyData) : (Buffer.isBuffer(bodyData) ? JSON.parse(bodyData.toString('utf8')) : bodyData);
+      try {
+        const bodyData = await getRequestBody(req);
+        const update = typeof bodyData === 'string' ? JSON.parse(bodyData) : (Buffer.isBuffer(bodyData) ? JSON.parse(bodyData.toString('utf8')) : bodyData);
 
-          if (!update || !update.message) return;
+        if (update && update.message) {
           const msg = update.message;
           const chatId = msg.chat.id;
 
           if (!TELEGRAM_BOT_TOKEN) {
             console.warn('TELEGRAM_BOT_TOKEN not configured');
-            return;
-          }
-
-          // /start or /help
-          if (msg.text && (msg.text.startsWith('/start') || msg.text.startsWith('/help'))) {
+          } else if (msg.text && (msg.text.startsWith('/start') || msg.text.startsWith('/help'))) {
             await sendTelegramMessage(TELEGRAM_BOT_TOKEN, chatId, 
               `👋 *សូមស្វាគមន៍មកកាន់ប្រព័ន្ធរបាយការណ៍វឌ្ឍនភាព ប.ស.ស.!*\n\n` +
               `📥 សូមផ្ញើឯកសារ Word (*.docx*) នៃរបាយការណ៍វឌ្ឍនភាពប្រចាំខែមកកាន់ទីនេះ ប្រព័ន្ធនឹង Import និងផ្ទៀងផ្ទាត់ចំណុចដៅជាមួយផែនការសកម្មភាពឆ្នាំ២០២៧ ដោយស្វ័យប្រវត្ត។`
             );
-            return;
-          }
-
-          // Document upload
-          if (msg.document) {
+          } else if (msg.document) {
             const doc = msg.document;
             const fileName = doc.file_name || '';
             if (!fileName.toLowerCase().endsWith('.docx')) {
               await sendTelegramMessage(TELEGRAM_BOT_TOKEN, chatId, `⚠️ សូមផ្ញើតែឯកសារ Word ដែលមានកន្ទុយ *.docx* ប៉ុណ្ណោះ។`);
-              return;
+            } else {
+              await sendTelegramMessage(TELEGRAM_BOT_TOKEN, chatId, `⏳ កំពុងទទួល និងដំណើរការអានឯកសារ *${escapeTelegramMarkdown(fileName)}*...`);
+
+              // Download file from Telegram
+              const fileRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${doc.file_id}`);
+              const fileJson = await fileRes.json();
+              if (!fileJson.ok || !fileJson.result.file_path) {
+                throw new Error('ពុំអាចទាញយកឯកសារពី Telegram បានឡើយ');
+              }
+
+              const downloadUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileJson.result.file_path}`;
+              const fileResp = await fetch(downloadUrl);
+              const arrayBuf = await fileResp.arrayBuffer();
+              const buffer = Buffer.from(arrayBuf);
+
+              // Parse document
+              const parsed = parseDocxFile(buffer);
+              const planItems = await getPlanFromDb();
+              const mismatches = verifyTargetsAgainstPlan(parsed.items || [], parsed.month, planItems);
+              parsed.targetMismatchesCount = mismatches;
+
+              // Save to Supabase & local
+              await saveReportToDb(parsed);
+
+              const mismatchNotice = mismatches > 0 
+                ? `⚠️ *ចំណុចដៅខុសពីផែនការ៖* ${mismatches} សកម្មភាព (សូមចូលពិនិត្យផ្ទៀងផ្ទាត់)`
+                : `✅ *ចំណុចដៅត្រឹមត្រូវ ១០០% ស្របតាមផែនការ*`;
+
+              const replyText = 
+                `🎉 *បានទទួល និង Import របាយការណ៍ជោគជ័យ!*\n\n` +
+                `📄 *ឯកសារ៖* ${escapeTelegramMarkdown(fileName)}\n` +
+                `📅 *ខែ៖* ខែ${parsed.month} ឆ្នាំ${parsed.year}\n` +
+                `🏢 *អង្គភាព៖* ${parsed.department || 'នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន'}\n` +
+                `📊 *សរុបសកម្មភាព៖* ${(parsed.items || []).length} សកម្មភាព\n` +
+                `${mismatchNotice}\n\n` +
+                `🔗 *ចូលមើលតារាងរបាយការណ៍លើ Web៖*\nhttps://nssf-progress-report-pisey3.vercel.app`;
+
+              await sendTelegramMessage(TELEGRAM_BOT_TOKEN, chatId, replyText);
             }
-
-            await sendTelegramMessage(TELEGRAM_BOT_TOKEN, chatId, `⏳ កំពុងទទួល និងដំណើរការអានឯកសារ *${escapeTelegramMarkdown(fileName)}*...`);
-
-            // Download file from Telegram
-            const fileRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${doc.file_id}`);
-            const fileJson = await fileRes.json();
-            if (!fileJson.ok || !fileJson.result.file_path) {
-              throw new Error('ពុំអាចទាញយកឯកសារពី Telegram បានឡើយ');
-            }
-
-            const downloadUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileJson.result.file_path}`;
-            const fileResp = await fetch(downloadUrl);
-            const arrayBuf = await fileResp.arrayBuffer();
-            const buffer = Buffer.from(arrayBuf);
-
-            // Parse document
-            const parsed = parseDocxFile(buffer);
-            const planItems = await getPlanFromDb();
-            const mismatches = verifyTargetsAgainstPlan(parsed.items || [], parsed.month, planItems);
-            parsed.targetMismatchesCount = mismatches;
-
-            // Save to Supabase & local
-            await saveReportToDb(parsed);
-
-            const mismatchNotice = mismatches > 0 
-              ? `⚠️ *ចំណុចដៅខុសពីផែនការ៖* ${mismatches} សកម្មភាព (សូមចូលពិនិត្យផ្ទៀងផ្ទាត់)`
-              : `✅ *ចំណុចដៅត្រឹមត្រូវ ១០០% ស្របតាមផែនការ*`;
-
-            const replyText = 
-              `🎉 *បានទទួល និង Import របាយការណ៍ជោគជ័យ!*\n\n` +
-              `📄 *ឯកសារ៖* ${escapeTelegramMarkdown(fileName)}\n` +
-              `📅 *ខែ៖* ខែ${parsed.month} ឆ្នាំ${parsed.year}\n` +
-              `🏢 *អង្គភាព៖* ${parsed.department || 'នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន'}\n` +
-              `📊 *សរុបសកម្មភាព៖* ${(parsed.items || []).length} សកម្មភាព\n` +
-              `${mismatchNotice}\n\n` +
-              `🔗 *ចូលមើលតារាងរបាយការណ៍លើ Web៖*\nhttps://nssf-progress-report.vercel.app`;
-
-            await sendTelegramMessage(TELEGRAM_BOT_TOKEN, chatId, replyText);
           }
-        } catch (err) {
-          console.error('Telegram webhook processing error:', err);
         }
-      });
+      } catch (err) {
+        console.error('Telegram webhook processing error:', err);
+      }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
