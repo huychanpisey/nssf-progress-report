@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ប្រព័ន្ធគ្រប់គ្រងរបាយការណ៍វឌ្ឍនភាព - នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន ប.ស.ស.</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#1b365d',
+              600: '#152b4a',
+              700: '#0f2038',
+              800: '#0a1626'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-kantumruy">
+
+  <!-- Header Banner (Compact & Clean) -->
+  <header class="bg-brand-500 text-white shadow-md border-b-2 border-amber-500 no-print">
+    <div class="w-full px-3 sm:px-6 py-2.5">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3 text-center md:text-left">
+          <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-amber-400/80 shadow-inner">
+            <i class="fa-solid fa-chart-line text-lg text-amber-300"></i>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold font-moul tracking-wide text-white leading-tight">ប្រព័ន្ធគ្រប់គ្រង និងតាមដានរបាយការណ៍វឌ្ឍនភាព</h1>
+            <p class="text-[11px] text-slate-200">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន (ប.ព) • បេឡាជាតិសន្តិសុខសង្គម (ប.ស.ស.)</p>
+          </div>
+        </div>
+
+        <!-- Mode Switcher & Top Action Controls -->
+        <div class="flex items-center flex-wrap gap-2">
+          
+          <!-- Mode Tabs (Monthly vs Consolidated) -->
+          <div class="bg-brand-700/80 p-0.5 rounded-lg flex items-center border border-brand-600 mr-1">
+            <button id="tabModeMonthly" class="px-2.5 py-1 rounded text-xs font-semibold transition bg-amber-500 text-brand-900 shadow flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-day"></i>
+              <span>របាយការណ៍ប្រចាំខែ</span>
+            </button>
+            <button id="tabModeConsolidated" class="px-2.5 py-1 rounded text-xs font-semibold transition text-slate-200 hover:text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group"></i>
+              <span>បូកសរុបពហុខែ (១-១២)</span>
+            </button>
+          </div>
+
+          <!-- Hidden file input for DOCX Import -->
+          <input type="file" id="docxFileInput" accept=".docx" class="hidden">
+          
+          <!-- Import Word Button -->
+          <button id="btnImportDocx" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1.5 transition text-xs" title="Import ឯកសារ Word ដើម្បីផ្ទៀងផ្ទាត់ចំណុចដៅ និងវឌ្ឍនភាព">
+            <i class="fa-solid fa-file-import text-amber-300"></i>
+            <span>Import Word</span>
+          </button>
+
+          <!-- Save Button -->
+          <button id="btnSaveTop" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1.5 transition text-xs">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>រក្សាទុក</span>
+          </button>
+
+          <!-- Clear Data Button -->
+          <button id="btnClearData" class="bg-rose-500/90 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1.5 transition text-xs" title="សម្អាតទិន្នន័យវឌ្ឍនភាពដែលបានបញ្ចូលសម្រាប់ខែនេះឡើងវិញ">
+            <i class="fa-solid fa-broom"></i>
+            <span>Clear ទិន្នន័យ</span>
+          </button>
+
+          <!-- Export Word Button -->
+          <button id="btnExportDocx" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1.5 transition text-xs" title="ទាញយក Word ផ្លូវការ">
+            <i class="fa-solid fa-file-word"></i>
+            <span>ទាញយក Word</span>
+          </button>
+
+          <!-- Export CSV -->
+          <button id="btnExportCsv" class="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1.5 transition text-xs" title="នាំចេញជាតារាង CSV/Excel">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>CSV</span>
+          </button>
+
+          <!-- Print Button -->
+          <button id="btnPrint" class="bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1.5 transition text-xs" title="បោះពុម្ព ឬ Save as PDF">
+            <i class="fa-solid fa-print"></i>
+            <span>បោះពុម្ព</span>
+          </button>
+
+          <!-- Toggle Fullscreen -->
+          <button id="btnToggleFullscreen" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1 transition text-xs" title="ពង្រីកពេញអេក្រង់ (Fullscreen)">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Full-Width Container (Optimized for Screen Fit) -->
+  <main class="w-full px-2 sm:px-4 py-3">
+
+    <!-- Print Header (Only visible when printing) -->
+    <div class="print-header mb-4">
+      <div class="text-xs font-semibold">ព្រះរាជាណាចក្រកម្ពុជា • ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+      <div class="text-[11px] text-slate-600 mb-1">បេឡាជាតិសន្តិសុខសង្គម (ប.ស.ស.)</div>
+      <h2 id="printTitle" class="text-base font-moul font-bold text-slate-900 mt-1">តារាងសម្រង់របាយការណ៍វឌ្ឍនភាព...</h2>
+      <div class="text-xs font-moul text-slate-700">របស់នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
+    </div>
+
+    <!-- Alert Banner for Target Mismatches (បុគ្គលិកដៅខុសពីផែនការ) -->
+    <div id="mismatchAlertBanner" class="hidden bg-rose-50 border border-rose-300 rounded-lg p-3 mb-3 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm no-print animate-pulse">
+      <div class="flex items-center gap-2.5 text-rose-800">
+        <div class="w-7 h-7 rounded-full bg-rose-200 flex items-center justify-center font-bold text-rose-700 shrink-0">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <span class="font-bold">រកឃើញចំណុចដៅខុសពីផែនការផ្លូវការ៖</span>
+          <span id="mismatchCountText" class="font-semibold text-rose-900 ml-1">មានចំនួន ០ សកម្មភាព</span>
+          <span class="text-slate-600 ml-1">(ប្រព័ន្ធបានប្រៀបធៀបជាមួយផែនការសកម្មភាពឆ្នាំ២០២៧ រួចរាល់)</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnFilterMismatches" class="bg-white hover:bg-slate-50 text-rose-700 border border-rose-300 px-3 py-1 rounded font-semibold text-xs flex items-center gap-1 transition">
+          <i class="fa-solid fa-filter"></i>
+          <span>មើលតែជួរដៅខុស</span>
+        </button>
+        <button id="btnFixAllTargets" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-1 rounded font-bold text-xs flex items-center gap-1 shadow transition">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>កែតម្រូវទាំងអស់តាមផែនការ</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Section A: Monthly Navigation Bar (Visible in Monthly Mode) -->
+    <section id="sectionMonthlyNav" class="bg-white px-3 py-2 rounded-lg shadow-sm border border-slate-200 mb-3 no-print">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-2">
+        
+        <!-- Year Selection -->
+        <div class="flex items-center gap-2 w-full lg:w-auto">
+          <label class="font-bold text-slate-700 text-xs whitespace-nowrap flex items-center gap-1">
+            <i class="fa-solid fa-calendar-days text-brand-500"></i>
+            <span>ឆ្នាំ៖</span>
+          </label>
+          <select id="yearSelect" class="bg-slate-50 border border-slate-300 font-semibold text-brand-600 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500 outline-none text-xs">
+            <option value="2026">២០២៦</option>
+            <option value="2027" selected>២០២៧ (ផែនការសកម្មភាព)</option>
+            <option value="2028">២០២៨</option>
+          </select>
+        </div>
+
+        <!-- 12 Months Tabs -->
+        <div class="flex flex-wrap items-center justify-center gap-1 w-full lg:w-auto">
+          <div id="monthTabsContainer" class="flex flex-wrap gap-1">
+            <!-- Rendered dynamically in app.js -->
+          </div>
+        </div>
+
+        <!-- Action / Sync Options -->
+        <div class="flex items-center gap-2">
+          <button id="btnSyncPlan" title="ទាញចំណុចដៅពីផែនការសកម្មភាពឆ្នាំ២០២៧ ចូលមកឡើងវិញ" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+            <i class="fa-solid fa-arrows-rotate text-amber-600"></i>
+            <span>ទាញពីផែនការឆ្នាំ២០២៧</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section B: Consolidated Range Navigation Bar (Visible in Consolidated Mode) -->
+    <section id="sectionConsolidatedNav" class="hidden bg-indigo-50/70 border border-indigo-200 px-4 py-2.5 rounded-lg shadow-sm mb-3 no-print">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-3 text-xs">
+        
+        <!-- Range Selectors -->
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="font-bold text-indigo-950 flex items-center gap-1">
+            <i class="fa-solid fa-arrows-split-up-and-left text-indigo-600"></i>
+            <span>ជ្រើសរើសចន្លោះខែដើម្បីបូកសរុប៖</span>
+          </span>
+
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-600">ចាប់ពីខែ៖</span>
+            <select id="selectFromMonth" class="bg-white border border-indigo-300 rounded px-2 py-1 font-semibold text-indigo-900 outline-none">
+              <option value="0">មករា (01)</option>
+              <option value="1">កុម្ភៈ (02)</option>
+              <option value="2">មីនា (03)</option>
+              <option value="3">មេសា (04)</option>
+              <option value="4">ឧសភា (05)</option>
+              <option value="5">មិថុនា (06)</option>
+              <option value="6">កក្កដា (07)</option>
+              <option value="7">សីហា (08)</option>
+              <option value="8">កញ្ញា (09)</option>
+              <option value="9">តុលា (10)</option>
+              <option value="10">វិច្ឆិកា (11)</option>
+              <option value="11">ធ្នូ (12)</option>
+            </select>
+
+            <span class="text-slate-600 ml-1">ដល់ខែ៖</span>
+            <select id="selectToMonth" class="bg-white border border-indigo-300 rounded px-2 py-1 font-semibold text-indigo-900 outline-none">
+              <option value="0">មករា (01)</option>
+              <option value="1">កុម្ភៈ (02)</option>
+              <option value="2">មីនា (03)</option>
+              <option value="3">មេសា (04)</option>
+              <option value="4">ឧសភា (05)</option>
+              <option value="5">មិថុនា (06)</option>
+              <option value="6">កក្កដា (07)</option>
+              <option value="7">សីហា (08)</option>
+              <option value="8" selected>កញ្ញា (09)</option>
+              <option value="9">តុលា (10)</option>
+              <option value="10">វិច្ឆិកា (11)</option>
+              <option value="11">ធ្នូ (12)</option>
+            </select>
+          </div>
+
+          <!-- Quick Range Presets -->
+          <div class="flex items-center gap-1">
+            <span class="text-slate-500">គំរូជ្រើសរើសលឿន៖</span>
+            <button class="btn-preset-range bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-300 px-2 py-0.5 rounded text-[11px]" data-from="0" data-to="2">ត្រីមាសទី ១ (១-៣)</button>
+            <button class="btn-preset-range bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-300 px-2 py-0.5 rounded text-[11px]" data-from="0" data-to="5">ឆមាសទី ១ (១-៦)</button>
+            <button class="btn-preset-range bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-300 px-2 py-0.5 rounded text-[11px]" data-from="0" data-to="8">៩ ខែ (១-៩)</button>
+            <button class="btn-preset-range bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-300 px-2 py-0.5 rounded text-[11px]" data-from="0" data-to="11">ពេញមួយឆ្នាំ (១-១២)</button>
+          </div>
+        </div>
+
+        <button id="btnRunConsolidate" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded font-bold text-xs flex items-center gap-1.5 shadow transition">
+          <i class="fa-solid fa-calculator"></i>
+          <span>ដំណើរការបូកសរុប</span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- KPI Summary Dashboard -->
+    <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-3 no-print">
+      
+      <!-- Total Activities -->
+      <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div>
+          <div class="text-[11px] text-slate-500 font-medium leading-none">សរុបសកម្មភាព</div>
+          <div id="kpiTotal" class="text-base font-bold text-slate-800 mt-0.5">0</div>
+        </div>
+      </div>
+
+      <!-- Status 3 (Achieved) -->
+      <div class="bg-white p-2.5 rounded-lg border border-emerald-200 shadow-sm flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+          ៣
+        </div>
+        <div>
+          <div class="text-[11px] text-emerald-700 font-medium leading-none">សម្រេចបាន (៣)</div>
+          <div id="kpiStatus3" class="text-base font-bold text-emerald-600 mt-0.5">0</div>
+        </div>
+      </div>
+
+      <!-- Status 2 (In Progress) -->
+      <div class="bg-white p-2.5 rounded-lg border border-amber-200 shadow-sm flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold">
+          ២
+        </div>
+        <div>
+          <div class="text-[11px] text-amber-700 font-medium leading-none">កំពុងអនុវត្ត (២)</div>
+          <div id="kpiStatus2" class="text-base font-bold text-amber-600 mt-0.5">0</div>
+        </div>
+      </div>
+
+      <!-- Status 1 (Delayed/Not started) -->
+      <div class="bg-white p-2.5 rounded-lg border border-rose-200 shadow-sm flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-md bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold">
+          ១
+        </div>
+        <div>
+          <div class="text-[11px] text-rose-700 font-medium leading-none">មិនទាន់អនុវត្ត (១)</div>
+          <div id="kpiStatus1" class="text-base font-bold text-rose-600 mt-0.5">0</div>
+        </div>
+      </div>
+
+      <!-- Inactive (-) -->
+      <div class="bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-md bg-slate-100 text-slate-600 flex items-center justify-center text-sm font-bold">
+          -
+        </div>
+        <div>
+          <div class="text-[11px] text-slate-500 font-medium leading-none">គ្មានសកម្មភាព (-)</div>
+          <div id="kpiStatusNone" class="text-base font-bold text-slate-600 mt-0.5">0</div>
+        </div>
+      </div>
+
+      <!-- Progress Rate -->
+      <div class="bg-white p-2.5 rounded-lg border border-indigo-200 shadow-sm flex flex-col justify-center">
+        <div class="flex items-center justify-between text-[11px] text-indigo-700 font-semibold mb-1 leading-none">
+          <span>វឌ្ឍនភាពរួម</span>
+          <span id="kpiPercentText">0%</span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div id="kpiProgressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Filters & Search Toolbar (Single Clean Line) -->
+    <section class="bg-white px-3 py-2 rounded-lg shadow-sm border border-slate-200 mb-2.5 no-print flex flex-wrap items-center justify-between gap-2 text-xs">
+      
+      <!-- Left Filters -->
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Search -->
+        <div class="relative w-52">
+          <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-[11px]"></i>
+          <input type="text" id="searchInput" placeholder="ស្វែងរកសកម្មភាព..." class="w-full pl-7 pr-2 py-1 text-xs bg-slate-50 border border-slate-300 rounded focus:ring-1 focus:ring-brand-500 outline-none">
+        </div>
+
+        <!-- Filter by Office -->
+        <div class="flex items-center gap-1">
+          <span class="text-slate-500 font-semibold">ការិយាល័យ៖</span>
+          <select id="filterOffice" class="bg-slate-50 border border-slate-300 rounded px-1.5 py-1 text-xs outline-none">
+            <option value="ALL">ទាំងអស់ (All Offices)</option>
+            <option value="ការិ. អ.ក">ការិ. អ.ក (អភិវឌ្ឍន៍កម្មវិធី)</option>
+            <option value="ការិ. គ.ស.ប">ការិ. គ.ស.ប (ទិន្នន័យ & បរិក្ខារ)</option>
+            <option value="ការិ. ស.ប.ព">ការិ. ស.ប.ព (សុវត្ថិភាពប្រព័ន្ធ)</option>
+            <option value="ន ប.ព">ន ប.ព (ថ្នាក់ដឹកនាំ)</option>
+          </select>
+        </div>
+
+        <!-- Filter by Status -->
+        <div class="flex items-center gap-1">
+          <span class="text-slate-500 font-semibold">ស្ថានភាព៖</span>
+          <select id="filterStatus" class="bg-slate-50 border border-slate-300 rounded px-1.5 py-1 text-xs outline-none">
+            <option value="ALL">ទាំងអស់ (All)</option>
+            <option value="៣">កូដ ៣ - សម្រេច</option>
+            <option value="២">កូដ ២ - កំពុងអនុវត្ត</option>
+            <option value="១">កូដ ១ - មិនទាន់អនុវត្ត</option>
+            <option value="-">កូដ - គ្មានសកម្មភាព</option>
+            <option value="MISMATCH">⚠️ ចំណុចដៅខុសពីផែនការ</option>
+          </select>
+        </div>
+
+        <!-- Filter by Program -->
+        <div class="flex items-center gap-1">
+          <span class="text-slate-500 font-semibold">កម្មវិធី៖</span>
+          <select id="filterProgram" class="bg-slate-50 border border-slate-300 rounded px-1.5 py-1 text-xs outline-none max-w-xs">
+            <option value="ALL">កម្មវិធីទាំងអស់</option>
+            <option value="១">កម្មវិធីទី ១៖ ការងារអភិវឌ្ឍ & គ្រប់គ្រងកម្មវិធី</option>
+            <option value="២">កម្មវិធីទី ២៖ មជ្ឈមណ្ឌលទិន្នន័យ & បរិក្ខា</option>
+            <option value="៣">កម្មវិធីទី ៣៖ សុវត្ថិភាពប្រព័ន្ធ</option>
+            <option value="៤">កម្មវិធីទី ៤៖ អភិបាលកិច្ច</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Right Buttons -->
+      <div class="flex items-center gap-2">
+        <button id="btnAddNewRow" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 border border-slate-300 transition">
+          <i class="fa-solid fa-plus text-slate-500"></i>
+          <span>បន្ថែមជួរ</span>
+        </button>
+        <div id="saveStatusIndicator" class="text-[11px] text-slate-400 italic">
+          <i class="fa-regular fa-clock"></i> បានរក្សាទុក
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Report Table Header Title Display (Compact) -->
+    <div class="bg-white px-3 py-2.5 rounded-t-lg border border-b-0 border-slate-200 text-center">
+      <h2 id="reportHeaderTitle" class="text-sm sm:text-base font-moul text-slate-900 leading-snug">
+        តារាងសម្រង់របាយការណ៍វឌ្ឍនភាពប្រចាំខែកញ្ញា ឆ្នាំ២០២៧
+      </h2>
+      <h3 class="text-[11px] sm:text-xs font-moul text-slate-600 mt-0.5">
+        របស់នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន
+      </h3>
+    </div>
+
+    <!-- Main Data Table Container (Optimized 100% Screen Width) -->
+    <div class="report-table-wrapper rounded-b-lg">
+      <table class="report-table" id="reportTable">
+        <thead>
+          <tr>
+            <th style="width: 3%;">ល.រ</th>
+            <th style="width: 13.5%;">សកម្មភាព</th>
+            <th style="width: 14.5%;">សូចនាករ</th>
+            <th style="width: 6.5%;">មធ្យោបាយ<br>ផ្ទៀងផ្ទាត់</th>
+            <th style="width: 4.5%;">ឯកតា</th>
+            <th id="thMonthTarget" style="width: 8%;">ចំណុចដៅខែ...</th>
+            <th style="width: 7.5%;">ស្ថានភាព</th>
+            <th style="width: 19%;">វឌ្ឍនភាពសម្រេចបាន</th>
+            <th style="width: 4.5%;">ធៀបសូចនាករ<br>(%)</th>
+            <th style="width: 9%;">បញ្ហាប្រឈម/<br>សំណូមពរ</th>
+            <th style="width: 9%;">ដំណោះស្រាយ</th>
+            <th style="width: 6%;">អង្គភាព<br>ប្រតិបត្តិ</th>
+            <th style="width: 3%;" class="no-print">កែ</th>
+          </tr>
+        </thead>
+        <tbody id="reportTableBody">
+          <!-- Populated by app.js -->
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- Detail Editing Modal -->
+  <div id="editModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      
+      <!-- Modal Header -->
+      <div class="bg-brand-500 text-white px-5 py-3 flex items-center justify-between">
+        <div>
+          <h3 class="font-moul text-sm font-bold text-amber-300">កែសម្រួលព័ត៌មានលម្អិតវឌ្ឍនភាព</h3>
+          <p id="modalSubTitle" class="text-[11px] text-slate-200">លេខរៀង៖ -</p>
+        </div>
+        <button id="modalBtnClose" class="text-slate-300 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto space-y-3 text-xs">
+        
+        <!-- Indicator & Activity preview -->
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200">
+          <div class="font-bold text-slate-700">សកម្មភាព៖</div>
+          <p id="modalActivityText" class="text-slate-800 mb-1.5">-</p>
+          <div class="font-bold text-slate-700">សូចនាករ៖</div>
+          <p id="modalIndicatorText" class="text-slate-800">-</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Target -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ចំណុចដៅខែ៖</label>
+            <input type="text" id="modalInputTarget" class="w-full border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500">
+            <div id="modalPlanTargetHint" class="text-[10px] text-slate-500 mt-1"></div>
+          </div>
+          <!-- Status -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ស្ថានភាព៖</label>
+            <select id="modalInputStatus" class="w-full border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500 font-semibold">
+              <option value="៣">៣ - សម្រេចបាន (Achieved)</option>
+              <option value="២">២ - កំពុងអនុវត្ត (In Progress)</option>
+              <option value="១">១ - មិនទាន់អនុវត្ត / ពន្យារ (Delayed)</option>
+              <option value="-">- គ្មានសកម្មភាពក្នុងខែនេះ</option>
+            </select>
+          </div>
+          <!-- Progress % -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">វឌ្ឍនភាពធៀប (%)៖</label>
+            <input type="text" id="modalInputPercent" placeholder="ឧ. ១០០ ឬ ៧៥" class="w-full border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <!-- Progress achieved text -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            <span>វឌ្ឍនភាពសម្រេចបានជាក់ស្តែង៖</span>
+            <span class="text-[10px] font-normal text-slate-500">(លទ្ធផលការងារសម្រេចក្នុងខែ)</span>
+          </label>
+          <textarea id="modalInputProgress" rows="4" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 leading-relaxed"></textarea>
+        </div>
+
+        <!-- Challenges & Requests -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">បញ្ហាប្រឈម / សំណូមពរ៖</label>
+          <textarea id="modalInputChallenges" rows="2" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500"></textarea>
+        </div>
+
+        <!-- Solutions -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">ដំណោះស្រាយ៖</label>
+          <textarea id="modalInputSolutions" rows="2" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500"></textarea>
+        </div>
+
+        <!-- Implementing Office -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">អង្គភាពប្រតិបត្តិ (ការិយាល័យ)៖</label>
+          <input type="text" id="modalInputOffice" class="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-brand-500">
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-100 px-5 py-2.5 border-t border-slate-200 flex items-center justify-end gap-2">
+        <button id="modalBtnCancel" class="px-3 py-1.5 bg-white border border-slate-300 rounded text-slate-700 hover:bg-slate-50 font-medium text-xs">
+          បោះបង់
+        </button>
+        <button id="modalBtnSave" class="px-4 py-1.5 bg-brand-500 text-white rounded hover:bg-brand-600 font-bold text-xs flex items-center gap-1 shadow">
+          <i class="fa-solid fa-check"></i>
+          <span>យល់ព្រមកែសម្រួល</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+node_modules/
+tools/
+deploy_payload.json
+temp_*
+*.log
+.DS_Store
+Thumbs.db
+active_port.txt
+.env

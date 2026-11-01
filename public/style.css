@@ -1,0 +1,316 @@
+/* Khmer Fonts & Application Styles */
+@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Moul&display=swap');
+
+:root {
+  --primary: #1b365d;
+  --primary-dark: #0f2341;
+  --primary-light: #254a80;
+  --accent: #d97706;
+  --accent-light: #fef3c7;
+  --bg-main: #f8fafc;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --status-3: #10b981;
+  --status-2: #f59e0b;
+  --status-1: #ef4444;
+  --status-none: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Kantumruy Pro', 'Khmer OS Siemreap', 'Battambang', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.45;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.font-moul {
+  font-family: 'Moul', 'Khmer OS Muol Light', serif;
+}
+
+.font-kantumruy {
+  font-family: 'Kantumruy Pro', 'Khmer OS Siemreap', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Table Wrapper Optimized for Screen Fit */
+.report-table-wrapper {
+  overflow-x: auto;
+  max-height: calc(100vh - 250px);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  background: white;
+  width: 100%;
+}
+
+.report-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.report-table th {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  font-family: 'Moul', 'Khmer OS Muol Light', serif;
+  font-weight: normal;
+  padding: 8px 4px;
+  border: 1px solid #94a3b8;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  font-size: 11.5px;
+  line-height: 1.35;
+  box-shadow: 0 1px 2px -1px rgba(0,0,0,0.1);
+  word-wrap: break-word;
+}
+
+.report-table td {
+  padding: 5px 6px;
+  border: 1px solid #cbd5e1;
+  vertical-align: top;
+  font-size: 12px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.report-table tr:hover td {
+  background-color: #f8fafc !important;
+}
+
+/* Target Mismatch Highlighting */
+.target-mismatch-cell {
+  background-color: #fff1f2 !important;
+  border: 1.5px dashed #f43f5e !important;
+  border-radius: 4px;
+}
+
+.target-fix-btn {
+  background-color: #f43f5e;
+  color: white;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  margin-top: 2px;
+}
+.target-fix-btn:hover {
+  background-color: #e11d48;
+  transform: scale(1.05);
+}
+
+/* Category header rows */
+.tr-program-header td {
+  background-color: #e0e7ff !important;
+  color: #1e1b4b;
+  font-family: 'Moul', 'Khmer OS Muol Light', serif;
+  font-size: 12.5px;
+  padding: 7px 10px;
+  border: 1px solid #a5b4fc;
+}
+
+.tr-activity-group td {
+  background-color: #f0fdf4 !important;
+  color: #064e3b;
+  font-family: 'Moul', 'Khmer OS Muol Light', serif;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid #bbf7d0;
+}
+
+/* Badges for Status */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 11px;
+  color: white;
+}
+
+.badge-status-3 {
+  background-color: #10b981;
+  box-shadow: 0 0 0 1.5px #d1fae5;
+}
+
+.badge-status-2 {
+  background-color: #f59e0b;
+  box-shadow: 0 0 0 1.5px #fef3c7;
+}
+
+.badge-status-1 {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 1.5px #fee2e2;
+}
+
+.badge-status-none {
+  background-color: #94a3b8;
+}
+
+/* Compact Editable Inputs */
+.inline-input {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 3px 4px;
+  font-family: inherit;
+  font-size: 11.5px;
+  line-height: 1.35;
+  background: transparent;
+  outline: none;
+  transition: all 0.15s ease-in-out;
+  resize: vertical;
+}
+
+.inline-input:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.inline-input:focus {
+  background: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+textarea.inline-input {
+  min-height: 38px;
+}
+
+/* Modal styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Toast Notification */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 10px 16px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  font-size: 12.5px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 260px;
+  animation: slideIn 0.2s ease-out;
+}
+
+.toast-success { background: #059669; }
+.toast-error { background: #dc2626; }
+.toast-warning { background: #d97706; }
+.toast-info { background: #2563eb; }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Print Optimization */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print, header, nav, .control-bar, .kpi-dashboard, #toast-container, .modal-backdrop, #mismatchAlertBanner {
+    display: none !important;
+  }
+  .report-table-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .report-table th, .report-table td {
+    border: 1px solid black !important;
+    color: black !important;
+  }
+  .report-table th {
+    background-color: #eee !important;
+  }
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  @page {
+    size: A4 landscape;
+    margin: 0.8cm;
+  }
+}
+
+.print-header {
+  display: none;
+}

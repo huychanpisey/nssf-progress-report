@@ -1,0 +1,20 @@
+{
+  "name": "nssf-it-progress-report",
+  "version": "1.0.0",
+  "description": "ប្រព័ន្ធគ្រប់គ្រង និងតាមដានរបាយការណ៍វឌ្ឍនភាពប្រចាំខែ នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន ប.ស.ស.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "nssf",
+    "progress-report",
+    "cambodia",
+    "khmer"
+  ],
+  "author": "Antigravity",
+  "license": "ISC",
+  "dependencies": {
+    "adm-zip": "^0.6.1"
+  }
+}
