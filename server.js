@@ -15,9 +15,11 @@ const REPORTS_DIR = path.resolve(DATA_DIR, 'reports');
 const PLAN_PATH = path.resolve(DATA_DIR, 'action_plan_2027.json');
 const PUBLIC_DIR = path.resolve(__dirname, 'public');
 
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
-if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR);
-if (!fs.existsSync(PUBLIC_DIR)) fs.mkdirSync(PUBLIC_DIR);
+try {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+  if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR);
+  if (!fs.existsSync(PUBLIC_DIR)) fs.mkdirSync(PUBLIC_DIR);
+} catch (e) {}
 
 // Supabase Configuration
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://kcqhvsdqscaqvizzuptf.supabase.co';
@@ -680,6 +682,7 @@ async function handleRequest(req, res) {
               }
             }
           }
+        }
       } catch (err) {
         console.error('Telegram webhook processing error:', err);
       }
