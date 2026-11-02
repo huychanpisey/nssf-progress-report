@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.4">
   <script>
     tailwind.config = {
       theme: {
@@ -100,6 +100,12 @@
             <span>បោះពុម្ព</span>
           </button>
 
+          <!-- Toggle Menu Bar / Controls -->
+          <button id="btnToggleControls" class="bg-brand-700/90 hover:bg-brand-600 text-amber-300 hover:text-white px-2.5 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1.5 transition text-xs border border-brand-600" title="បិទ/បើក Menu ខាងលើ ដើម្បីមើលតារាងបានធំ (Ctrl + M)">
+            <i class="fa-solid fa-chevron-up transition-transform duration-300" id="iconToggleControls"></i>
+            <span id="textToggleControls" class="hidden sm:inline">បិទ Menu</span>
+          </button>
+
           <!-- Toggle Fullscreen -->
           <button id="btnToggleFullscreen" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg font-semibold shadow flex items-center gap-1 transition text-xs" title="ពង្រីកពេញអេក្រង់ (Fullscreen)">
             <i class="fa-solid fa-expand"></i>
@@ -121,7 +127,10 @@
       <div class="text-xs font-moul text-slate-700">របស់នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
     </div>
 
-    <!-- Alert Banner for Target Mismatches (បុគ្គលិកដៅខុសពីផែនការ) -->
+    <!-- Collapsible Controls Panel (Alert Banner, Navigation, KPIs, and Filters) -->
+    <div id="collapsibleControls" class="collapsible-controls">
+
+      <!-- Alert Banner for Target Mismatches (បុគ្គលិកដៅខុសពីផែនការ) -->
     <div id="mismatchAlertBanner" class="hidden bg-rose-50 border border-rose-300 rounded-lg p-3 mb-3 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm no-print animate-pulse">
       <div class="flex items-center gap-2.5 text-rose-800">
         <div class="w-7 h-7 rounded-full bg-rose-200 flex items-center justify-center font-bold text-rose-700 shrink-0">
@@ -376,14 +385,26 @@
 
     </section>
 
+    </div>
+    <!-- End of Collapsible Controls Panel -->
+
     <!-- Report Table Header Title Display (Compact) -->
-    <div class="bg-white px-3 py-2.5 rounded-t-lg border border-b-0 border-slate-200 text-center">
-      <h2 id="reportHeaderTitle" class="text-sm sm:text-base font-moul text-slate-900 leading-snug">
-        តារាងសម្រង់របាយការណ៍វឌ្ឍនភាពប្រចាំខែកញ្ញា ឆ្នាំ២០២៧
-      </h2>
-      <h3 class="text-[11px] sm:text-xs font-moul text-slate-600 mt-0.5">
-        របស់នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន
-      </h3>
+    <div class="bg-white px-3 py-2 rounded-t-lg border border-b-0 border-slate-200 flex items-center justify-between gap-2 relative">
+      <div class="hidden sm:block w-28"></div>
+      <div class="text-center flex-1">
+        <h2 id="reportHeaderTitle" class="text-sm sm:text-base font-moul text-slate-900 leading-snug">
+          តារាងសម្រង់របាយការណ៍វឌ្ឍនភាពប្រចាំខែកញ្ញា ឆ្នាំ២០២៧
+        </h2>
+        <h3 class="text-[11px] sm:text-xs font-moul text-slate-600 mt-0.5">
+          របស់នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន
+        </h3>
+      </div>
+      <div class="no-print shrink-0 w-28 text-right">
+        <button id="btnToggleControlsInline" class="bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-brand-600 border border-slate-300 px-2.5 py-1 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm transition" title="បិទ/បើក Menu (ខែ ស្ថិតិ និងស្វែងរក) ដើម្បីមើលតារាងបានធំ (Ctrl + M)">
+          <i class="fa-solid fa-chevron-up text-brand-600 transition-transform duration-300" id="iconToggleControlsInline"></i>
+          <span id="textToggleControlsInline" class="text-[11px]">បិទ Menu</span>
+        </button>
+      </div>
     </div>
 
     <!-- Main Data Table Container (Optimized 100% Screen Width) -->
@@ -510,6 +531,6 @@
   <!-- Toast Notification Container -->
   <div id="toast-container"></div>
 
-  <script src="app.js?v=2.3"></script>
+  <script src="app.js?v=2.4"></script>
 </body>
 </html>

@@ -278,6 +278,46 @@ textarea.inline-input {
   to { transform: translateX(0); opacity: 1; }
 }
 
+
+/* Collapsible Controls Panel (Alerts, Navigation, KPIs, and Filters) */
+.collapsible-controls {
+  max-height: 1400px;
+  opacity: 1;
+  overflow: visible;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-in-out, margin 0.3s ease-in-out;
+  margin-bottom: 0.75rem;
+}
+
+body.controls-collapsed .collapsible-controls {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-bottom: 0 !important;
+  pointer-events: none;
+}
+
+/* Expanded Table Height when controls are collapsed */
+body.controls-collapsed .report-table-wrapper {
+  max-height: calc(100vh - 130px);
+}
+
+@media (min-height: 800px) {
+  body.controls-collapsed .report-table-wrapper {
+    max-height: calc(100vh - 110px);
+  }
+}
+
+/* Fullscreen mode table height adjustments */
+:fullscreen .report-table-wrapper,
+:-webkit-full-screen .report-table-wrapper {
+  max-height: calc(100vh - 200px);
+}
+
+body.controls-collapsed:fullscreen .report-table-wrapper,
+body.controls-collapsed:-webkit-full-screen .report-table-wrapper {
+  max-height: calc(100vh - 65px);
+}
+
 /* Print Optimization */
 @media print {
   body {

@@ -225,6 +225,9 @@ function setupEventListeners() {
     btnFullscreen.addEventListener('click', toggleFullscreen);
   }
 
+  // Toggle Collapsible Controls
+  setupCollapsibleControls();
+
   // Import Word DOCX
   if (elBtnImportDocx && elDocxFileInput) {
     elBtnImportDocx.addEventListener('click', () => {
@@ -475,6 +478,66 @@ async function handleDocxImport(e) {
     console.error('Import error:', err);
     showToast(`បញ្ហា Import៖ ${err.message}`, 'error');
   }
+}
+
+// Toggle Collapsible Controls (Alerts, Navigation, KPIs, and Filters)
+function setupCollapsibleControls() {
+  const btnToggle = document.getElementById('btnToggleControls');
+  const btnToggleInline = document.getElementById('btnToggleControlsInline');
+  const iconToggle = document.getElementById('iconToggleControls');
+  const textToggle = document.getElementById('textToggleControls');
+  const iconToggleInline = document.getElementById('iconToggleControlsInline');
+  const textToggleInline = document.getElementById('textToggleControlsInline');
+
+  const updateControlsUI = (isCollapsed) => {
+    if (isCollapsed) {
+      document.body.classList.add('controls-collapsed');
+      if (iconToggle) iconToggle.className = 'fa-solid fa-chevron-down transition-transform duration-300';
+      if (textToggle) textToggle.textContent = 'បង្ហាញ Menu';
+      if (iconToggleInline) iconToggleInline.className = 'fa-solid fa-chevron-down text-emerald-600 transition-transform duration-300';
+      if (textToggleInline) textToggleInline.textContent = 'បង្ហាញ Menu';
+      if (btnToggleInline) {
+        btnToggleInline.className = 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-1 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm transition';
+      }
+    } else {
+      document.body.classList.remove('controls-collapsed');
+      if (iconToggle) iconToggle.className = 'fa-solid fa-chevron-up transition-transform duration-300';
+      if (textToggle) textToggle.textContent = 'បិទ Menu';
+      if (iconToggleInline) iconToggleInline.className = 'fa-solid fa-chevron-up text-brand-600 transition-transform duration-300';
+      if (textToggleInline) textToggleInline.textContent = 'បិទ Menu';
+      if (btnToggleInline) {
+        btnToggleInline.className = 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-brand-600 border border-slate-300 px-2.5 py-1 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm transition';
+      }
+    }
+  };
+
+  const toggleControls = () => {
+    const isCurrentlyCollapsed = document.body.classList.contains('controls-collapsed');
+    const newState = !isCurrentlyCollapsed;
+    updateControlsUI(newState);
+    try {
+      localStorage.setItem('nssf_controls_collapsed', newState ? 'true' : 'false');
+    } catch (e) {}
+  };
+
+  if (btnToggle) btnToggle.addEventListener('click', toggleControls);
+  if (btnToggleInline) btnToggleInline.addEventListener('click', toggleControls);
+
+  // Keyboard shortcut: Ctrl + M or F2 to toggle
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey && (e.key === 'm' || e.key === 'M')) || e.key === 'F2') {
+      e.preventDefault();
+      toggleControls();
+    }
+  });
+
+  // Restore previous state if saved
+  try {
+    const saved = localStorage.getItem('nssf_controls_collapsed');
+    if (saved === 'true') {
+      updateControlsUI(true);
+    }
+  } catch (e) {}
 }
 
 // Toggle Fullscreen mode
