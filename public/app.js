@@ -117,12 +117,69 @@ function updateSyncPlanButtonText() {
   }
 }
 
+function updateUrlState() {
+  try {
+    const url = new URL(window.location);
+    url.searchParams.set('year', state.year);
+    url.searchParams.set('month', state.month);
+    window.history.replaceState({}, '', url);
+  } catch (e) {}
+}
+
 // Init application
 async function initApp() {
   setupEventListeners();
+
+  // Read URL query parameters (?year=2026&month=តុលា or ?year=2026&month=10)
+  const urlParams = new URLSearchParams(window.location.search);
+  const qYear = urlParams.get('year');
+  const qMonth = urlParams.get('month');
+
+  let hasExplicitParam = false;
+  if (qYear) {
+    state.year = qYear;
+    if (elYearSelect) elYearSelect.value = qYear;
+    hasExplicitParam = true;
+  }
+  if (qMonth) {
+    if (MONTH_NAMES.includes(qMonth)) {
+      state.month = qMonth;
+      const mIdx = MONTH_NAMES.indexOf(qMonth);
+      state.monthNum = String(mIdx + 1).padStart(2, '0');
+      hasExplicitParam = true;
+    } else {
+      const mNum = parseInt(qMonth, 10);
+      if (!isNaN(mNum) && mNum >= 1 && mNum <= 12) {
+        state.month = MONTH_NAMES[mNum - 1];
+        state.monthNum = String(mNum).padStart(2, '0');
+        hasExplicitParam = true;
+      }
+    }
+  }
+
+  await fetchAvailableReportsList();
+
+  // If no URL parameter was provided, auto-default to the latest available report
+  if (!hasExplicitParam && state.availableReports && state.availableReports.length > 0) {
+    const sorted = [...state.availableReports].sort((a, b) => {
+      const yDiff = Number(b.year) - Number(a.year);
+      if (yDiff !== 0) return yDiff;
+      return Number(b.monthNum || b.month_num || 0) - Number(a.monthNum || a.month_num || 0);
+    });
+    const latest = sorted[0];
+    if (latest && latest.year) {
+      state.year = String(latest.year);
+      if (elYearSelect) elYearSelect.value = state.year;
+      if (latest.month) {
+        state.month = latest.month;
+        const mIdx = MONTH_NAMES.indexOf(latest.month);
+        state.monthNum = mIdx >= 0 ? String(mIdx + 1).padStart(2, '0') : (latest.monthNum || '01');
+      }
+    }
+  }
+
   updateSyncPlanButtonText();
   await loadActionPlan(state.year);
-  await fetchAvailableReportsList();
   renderMonthTabs();
   await loadCurrentReport();
 
@@ -142,6 +199,7 @@ function setupEventListeners() {
   // Year Selection
   elYearSelect.addEventListener('change', async (e) => {
     state.year = e.target.value;
+    updateUrlState();
     updateSyncPlanButtonText();
     await loadActionPlan(state.year);
     await fetchAvailableReportsList();
@@ -607,6 +665,7 @@ function renderMonthTabs() {
       }
       state.month = mName;
       state.monthNum = mNum;
+      updateUrlState();
       renderMonthTabs();
       await loadCurrentReport();
     });
