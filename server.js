@@ -71,17 +71,23 @@ async function sendTelegramMessage(token, chatId, text) {
   }
 }
 
-function getPlanItems() {
+function getPlanItems(year = '2027') {
+  const yStr = String(year || '2027');
+  const specificPath = path.resolve(DATA_DIR, `action_plan_${yStr}.json`);
+  if (fs.existsSync(specificPath)) {
+    return JSON.parse(fs.readFileSync(specificPath, 'utf8'));
+  }
   if (fs.existsSync(PLAN_PATH)) {
     return JSON.parse(fs.readFileSync(PLAN_PATH, 'utf8'));
   }
   return [];
 }
 
-async function getPlanFromDb() {
+async function getPlanFromDb(year = '2027') {
+  const yStr = String(year || '2027');
   if (SUPABASE_URL && SUPABASE_KEY) {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/nssf_action_plan?id=eq.2027&select=items`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/nssf_action_plan?id=eq.${yStr}&select=items`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
       });
       if (res.ok) {
@@ -91,10 +97,10 @@ async function getPlanFromDb() {
         }
       }
     } catch(e) {
-      console.warn('Supabase getPlan error, falling back to local file:', e.message);
+      console.warn(`Supabase getPlan error for year ${yStr}, falling back to local file:`, e.message);
     }
   }
-  return getPlanItems();
+  return getPlanItems(yStr);
 }
 
 async function getReportFromDb(year, monthNum, monthName) {
@@ -192,7 +198,7 @@ async function listReportsFromDb() {
   }
 
   if (fs.existsSync(REPORTS_DIR)) {
-    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => /^\d{4}_\d{2}\.json$/.test(f));
     return files.map(f => {
       try {
         const content = JSON.parse(fs.readFileSync(path.join(REPORTS_DIR, f), 'utf8'));
@@ -313,7 +319,7 @@ function createDefaultReportForMonth(year, monthName, planList) {
 
 // Consolidate reports from Month A to Month B
 async function consolidateReports(year, fromMonthIdx, toMonthIdx) {
-  const planItems = await getPlanFromDb();
+  const planItems = await getPlanFromDb(year);
   const monthlyReports = [];
 
   for (let m = fromMonthIdx; m <= toMonthIdx; m++) {
@@ -450,7 +456,8 @@ async function handleRequest(req, res) {
   if (pathname.startsWith('/api/')) {
     // 1. Get Plan: GET /api/plan
     if (pathname === '/api/plan' && req.method === 'GET') {
-      const plan = await getPlanFromDb();
+      const targetYear = (parsedUrl.query && parsedUrl.query.year) || '2027';
+      const plan = await getPlanFromDb(targetYear);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(plan));
       return;
@@ -495,7 +502,7 @@ async function handleRequest(req, res) {
       }
 
       const reportData = await getReportFromDb(year, monthNum, monthName);
-      const planItems = await getPlanFromDb();
+      const planItems = await getPlanFromDb(year);
       const mismatches = verifyTargetsAgainstPlan(reportData.items || [], monthName, planItems);
       reportData.targetMismatchesCount = mismatches;
 
@@ -572,8 +579,9 @@ async function handleRequest(req, res) {
           throw new Error('ពុំមានទិន្នន័យឯកសារត្រូវបានបញ្ជូនមកទេ');
         }
 
-        const parsedResult = parseDocxFile(fileBuffer);
-        const planItems = await getPlanFromDb();
+        const fallbackYear = (parsedUrl.query && parsedUrl.query.year) || '2026';
+        const parsedResult = parseDocxFile(fileBuffer, fallbackYear);
+        const planItems = await getPlanFromDb(parsedResult.year);
         const mismatches = verifyTargetsAgainstPlan(parsedResult.items || [], parsedResult.month, planItems);
         parsedResult.targetMismatchesCount = mismatches;
 
@@ -630,7 +638,7 @@ async function handleRequest(req, res) {
 
               // Parse document
               const parsed = parseDocxFile(buffer);
-              const planItems = await getPlanFromDb();
+              const planItems = await getPlanFromDb(parsed.year);
               const mismatches = verifyTargetsAgainstPlan(parsed.items || [], parsed.month, planItems);
               parsed.targetMismatchesCount = mismatches;
 

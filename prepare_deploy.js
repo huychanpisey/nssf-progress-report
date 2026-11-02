@@ -12,15 +12,17 @@ const filesToInclude = [
   'public/index.html',
   'public/app.js',
   'public/style.css',
+  'data/action_plan_2026.json',
   'data/action_plan_2027.json',
   'data/reports/2026_09.json',
+  'data/reports/2026_10.json',
   'data/reports/2027_09.json',
   'data/reports/2027_12.json'
 ];
 
 const deployFiles = [];
 for (const rel of filesToInclude) {
-  const full = path.resolve(rel);
+  const full = path.resolve(__dirname, rel);
   if (!fs.existsSync(full)) {
     console.error('Missing file:', rel);
     continue;

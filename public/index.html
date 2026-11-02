@@ -130,7 +130,7 @@
         <div>
           <span class="font-bold">រកឃើញចំណុចដៅខុសពីផែនការផ្លូវការ៖</span>
           <span id="mismatchCountText" class="font-semibold text-rose-900 ml-1">មានចំនួន ០ សកម្មភាព</span>
-          <span class="text-slate-600 ml-1">(ប្រព័ន្ធបានប្រៀបធៀបជាមួយផែនការសកម្មភាពឆ្នាំ២០២៧ រួចរាល់)</span>
+          <span id="mismatchPlanYearText" class="text-slate-600 ml-1">(ប្រព័ន្ធបានប្រៀបធៀបជាមួយផែនការសកម្មភាពឆ្នាំ២០២៧ រួចរាល់)</span>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -156,7 +156,7 @@
             <span>ឆ្នាំ៖</span>
           </label>
           <select id="yearSelect" class="bg-slate-50 border border-slate-300 font-semibold text-brand-600 rounded px-2 py-1 focus:ring-1 focus:ring-brand-500 outline-none text-xs">
-            <option value="2026">២០២៦</option>
+            <option value="2026">២០២៦ (ផែនការសកម្មភាព)</option>
             <option value="2027" selected>២០២៧ (ផែនការសកម្មភាព)</option>
             <option value="2028">២០២៨</option>
           </select>
@@ -173,7 +173,7 @@
         <div class="flex items-center gap-2">
           <button id="btnSyncPlan" title="ទាញចំណុចដៅពីផែនការសកម្មភាពឆ្នាំ២០២៧ ចូលមកឡើងវិញ" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
             <i class="fa-solid fa-arrows-rotate text-amber-600"></i>
-            <span>ទាញពីផែនការឆ្នាំ២០២៧</span>
+            <span id="btnSyncPlanText">ទាញពីផែនការ២០២៧</span>
           </button>
         </div>
 
@@ -510,6 +510,6 @@
   <!-- Toast Notification Container -->
   <div id="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.3"></script>
 </body>
 </html>

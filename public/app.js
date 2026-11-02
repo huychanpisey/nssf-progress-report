@@ -101,10 +101,27 @@ const elModalInputChallenges = document.getElementById('modalInputChallenges');
 const elModalInputSolutions = document.getElementById('modalInputSolutions');
 const elModalInputOffice = document.getElementById('modalInputOffice');
 
+function updateSyncPlanButtonText() {
+  const btn = document.getElementById('btnSyncPlan');
+  const span = document.getElementById('btnSyncPlanText') || (btn ? btn.querySelector('span') : null);
+  const khmerYear = state.year === '2026' ? '២០២៦' : (state.year === '2027' ? '២០២៧' : state.year);
+  if (span) {
+    span.textContent = `ទាញពីផែនការ${khmerYear}`;
+  }
+  if (btn) {
+    btn.title = `ទាញចំណុចដៅពីផែនការសកម្មភាពឆ្នាំ${khmerYear} ចូលមកឡើងវិញ`;
+  }
+  const elMismatchPlanYearText = document.getElementById('mismatchPlanYearText');
+  if (elMismatchPlanYearText) {
+    elMismatchPlanYearText.textContent = `(ប្រព័ន្ធបានប្រៀបធៀបជាមួយផែនការសកម្មភាពឆ្នាំ${khmerYear} រួចរាល់)`;
+  }
+}
+
 // Init application
 async function initApp() {
   setupEventListeners();
-  await loadActionPlan();
+  updateSyncPlanButtonText();
+  await loadActionPlan(state.year);
   await fetchAvailableReportsList();
   renderMonthTabs();
   await loadCurrentReport();
@@ -125,6 +142,8 @@ function setupEventListeners() {
   // Year Selection
   elYearSelect.addEventListener('change', async (e) => {
     state.year = e.target.value;
+    updateSyncPlanButtonText();
+    await loadActionPlan(state.year);
     await fetchAvailableReportsList();
     renderMonthTabs();
     if (state.viewMode === 'MONTHLY') {
@@ -248,6 +267,7 @@ function handleClearData() {
     renderTable();
     updateKpiDashboard();
     markDirty();
+
     showToast(`បានសម្អាត (Clear) ទិន្នន័យវឌ្ឍនភាពខែ${state.month} រួចរាល់!`, 'info');
   } else {
     // Consolidated mode reload
@@ -258,21 +278,21 @@ function handleClearData() {
 }
 
 // Switch between Monthly and Consolidated Mode
-function switchMode(mode) {
+function switchMode(mode, reload = true) {
   state.viewMode = mode;
   if (mode === 'MONTHLY') {
     elTabModeMonthly.className = 'px-2.5 py-1 rounded text-xs font-semibold transition bg-amber-500 text-brand-900 shadow flex items-center gap-1.5';
     elTabModeConsolidated.className = 'px-2.5 py-1 rounded text-xs font-semibold transition text-slate-200 hover:text-white flex items-center gap-1.5';
     elSectionMonthlyNav.classList.remove('hidden');
     elSectionConsolidatedNav.classList.add('hidden');
-    loadCurrentReport();
+    if (reload) loadCurrentReport();
   } else {
     elTabModeMonthly.className = 'px-2.5 py-1 rounded text-xs font-semibold transition text-slate-200 hover:text-white flex items-center gap-1.5';
     elTabModeConsolidated.className = 'px-2.5 py-1 rounded text-xs font-semibold transition bg-amber-500 text-brand-900 shadow flex items-center gap-1.5';
     elSectionMonthlyNav.classList.add('hidden');
     elSectionConsolidatedNav.classList.remove('hidden');
     elMismatchAlertBanner.classList.add('hidden');
-    loadConsolidatedReport();
+    if (reload) loadConsolidatedReport();
   }
 }
 
@@ -337,6 +357,11 @@ function verifyTargetsInCurrentReport() {
 
   if (state.viewMode === 'MONTHLY' && mismatchCount > 0) {
     elMismatchCountText.textContent = `មានចំនួន ${mismatchCount} សកម្មភាព`;
+    const elMismatchPlanYearText = document.getElementById('mismatchPlanYearText');
+    if (elMismatchPlanYearText) {
+      const khmerYear = state.year === '2026' ? '២០២៦' : (state.year === '2027' ? '២០២៧' : state.year);
+      elMismatchPlanYearText.textContent = `(ប្រព័ន្ធបានប្រៀបធៀបជាមួយផែនការសកម្មភាពឆ្នាំ${khmerYear} រួចរាល់)`;
+    }
     elMismatchAlertBanner.classList.remove('hidden');
   } else {
     elMismatchAlertBanner.classList.add('hidden');
@@ -390,7 +415,7 @@ async function handleDocxImport(e) {
   showToast('កំពុងអាន និងផ្ទៀងផ្ទាត់ឯកសារ Word ជាមួយផែនការ...', 'info');
 
   try {
-    const res = await fetch('/api/import/docx', {
+    const res = await fetch(`/api/import/docx?year=${encodeURIComponent(state.year)}`, {
       method: 'POST',
       body: file
     });
@@ -405,12 +430,21 @@ async function handleDocxImport(e) {
       throw new Error('ពុំឃើញមានទិន្នន័យតារាងក្នុងឯកសារ Word នេះទេ');
     }
 
-    switchMode('MONTHLY');
+    switchMode('MONTHLY', false);
 
-    if (importedData.year) {
-      state.year = String(importedData.year);
-      elYearSelect.value = state.year;
-    }
+    // Reset filters to show full imported list
+    state.filters = { office: 'ALL', status: 'ALL', program: 'ALL', search: '' };
+    if (elSearchInput) elSearchInput.value = '';
+    if (elFilterOffice) elFilterOffice.value = 'ALL';
+    if (elFilterStatus) elFilterStatus.value = 'ALL';
+    if (elFilterProgram) elFilterProgram.value = 'ALL';
+
+    const targetYear = elYearSelect.value || state.year || (importedData.year ? String(importedData.year) : '2026');
+    state.year = targetYear;
+    importedData.year = parseInt(targetYear, 10);
+    elYearSelect.value = state.year;
+    updateSyncPlanButtonText();
+    await loadActionPlan(state.year);
     if (importedData.month) {
       state.month = importedData.month;
       const mIdx = MONTH_NAMES.indexOf(importedData.month);
@@ -429,6 +463,7 @@ async function handleDocxImport(e) {
     renderTable();
     updateKpiDashboard();
     markDirty();
+
 
     if (mismatches > 0) {
       showToast(`បាន Import ជោគជ័យ! ⚠️ រកឃើញ ${mismatches} សកម្មភាពដែលបុគ្គលិកដៅខុសពីផែនការ!`, 'warning');
@@ -454,9 +489,10 @@ function toggleFullscreen() {
 }
 
 // Load Action Plan
-async function loadActionPlan() {
+async function loadActionPlan(year) {
+  const targetYear = year || state.year || '2027';
   try {
-    const res = await fetch('/api/plan');
+    const res = await fetch(`/api/plan?year=${targetYear}`);
     if (res.ok) {
       state.planItems = await res.json();
     }
@@ -504,7 +540,7 @@ function renderMonthTabs() {
 
     btn.addEventListener('click', async () => {
       if (state.isDirty && state.viewMode === 'MONTHLY') {
-        await saveReport(true);
+    
       }
       state.month = mName;
       state.monthNum = mNum;
@@ -887,6 +923,7 @@ function bindTableEvents() {
       renderTable();
       updateKpiDashboard();
       markDirty();
+
     });
   });
 
@@ -897,6 +934,7 @@ function bindTableEvents() {
       const val = e.target.value;
       updateItemField(id, field, val);
       markDirty();
+
     });
 
     if (input.tagName === 'TEXTAREA') {
@@ -928,6 +966,7 @@ function bindTableEvents() {
           renderTable();
           updateKpiDashboard();
           markDirty();
+
           showToast('បានលុបជួរដោយជោគជ័យ!', 'info');
         }
       }
@@ -1097,6 +1136,7 @@ function addNewRow() {
     renderTable();
     updateKpiDashboard();
     markDirty();
+
     openEditModal(newId);
     showToast('បានបន្ថែមជួរថ្មី!', 'info');
   }
@@ -1156,7 +1196,8 @@ async function saveReport(silent = false) {
 
 // Sync with Action Plan
 function syncWithActionPlan() {
-  if (!confirm(`តើលោកអ្នកពិតជាចង់ទាញចំណុចដៅសម្រាប់ខែ "${state.month}" ពីផែនការសកម្មភាពឆ្នាំ២០២៧ ចូលមកឡើងវិញមែនទេ?`)) {
+  const khmerYear = state.year === '2026' ? '២០២៦' : (state.year === '2027' ? '២០២៧' : state.year);
+  if (!confirm(`តើលោកអ្នកពិតជាចង់ទាញចំណុចដៅសម្រាប់ខែ "${state.month}" ពីផែនការសកម្មភាពឆ្នាំ${khmerYear} ចូលមកឡើងវិញមែនទេ?`)) {
     return;
   }
 
@@ -1203,7 +1244,7 @@ function syncWithActionPlan() {
   renderTable();
   updateKpiDashboard();
   markDirty();
-  showToast('បានធ្វើសមកាលកម្មជាមួយផែនការសកម្មភាពឆ្នាំ២០២៧ រួចរាល់!', 'success');
+  showToast(`បានធ្វើសមកាលកម្មជាមួយផែនការសកម្មភាពឆ្នាំ${khmerYear} រួចរាល់!`, 'success');
 }
 
 // Export Word DOCX

@@ -13,7 +13,7 @@ function isSubProgramRow(no) {
 
 const KHMER_MONTHS = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
 
-function parseDocxFile(input) {
+function parseDocxFile(input, fallbackYear = 2026) {
   let buffer;
   if (Buffer.isBuffer(input)) {
     buffer = input;
@@ -29,23 +29,55 @@ function parseDocxFile(input) {
 
   const xml = docEntry.getData().toString('utf8');
 
-  // Detect month from text
-  let detectedMonth = 'កញ្ញា';
-  let detectedYear = 2027;
+  // Extract clean text from header paragraphs (before the table)
+  const tablePos = xml.indexOf('<w:tbl');
+  const headerXml = tablePos > 0 ? xml.slice(0, tablePos) : xml;
+  const headerText = cleanXml(headerXml);
 
+  // Detect month from header text first
+  let detectedMonth = null;
   for (const m of KHMER_MONTHS) {
-    if (xml.includes(`ខែ${m}`) || xml.includes(`ខែ ${m}`) || xml.includes(m)) {
+    if (headerText.includes(`ខែ${m}`) || headerText.includes(`ខែ ${m}`)) {
       detectedMonth = m;
       break;
     }
   }
 
-  // Detect year
-  const yearMatch = xml.match(/ឆ្នាំ\s*([០-៩0-9]{4})/);
-  if (yearMatch && yearMatch[1]) {
-    let yStr = yearMatch[1];
+  // If not found in header, check first 50k chars of clean text
+  if (!detectedMonth) {
+    const cleanPrefix = cleanXml(xml.slice(0, 50000));
+    for (const m of KHMER_MONTHS) {
+      if (cleanPrefix.includes(`ខែ${m}`) || cleanPrefix.includes(`ខែ ${m}`)) {
+        detectedMonth = m;
+        break;
+      }
+    }
+  }
+  if (!detectedMonth) detectedMonth = 'កញ្ញា';
+
+  // Detect year from header text first (matches ឆ្នាំ២០២៦, ឆ្នាំ2026 even if tags were between letters)
+  let detectedYear = null;
+  const headerYearMatch = headerText.match(/ឆ្នាំ\s*([០-៩0-9]{4})/);
+  if (headerYearMatch && headerYearMatch[1]) {
+    let yStr = headerYearMatch[1];
     yStr = yStr.replace(/[០-៩]/g, d => '០១២៣៤៥៦៧៨៩'.indexOf(d));
     detectedYear = parseInt(yStr, 10);
+  }
+
+  // If not found in header text, check if report title in first 50k chars has year
+  if (!detectedYear) {
+    const cleanPrefix = cleanXml(xml.slice(0, 50000));
+    const repYearMatch = cleanPrefix.match(/របាយការណ៍[^]*?ឆ្នាំ\s*([០-៩0-9]{4})/);
+    if (repYearMatch && repYearMatch[1]) {
+      let yStr = repYearMatch[1];
+      yStr = yStr.replace(/[០-៩]/g, d => '០១២៣៤៥៦៧៨៩'.indexOf(d));
+      detectedYear = parseInt(yStr, 10);
+    }
+  }
+
+  // If still not detected, fallback to the requested fallbackYear
+  if (!detectedYear) {
+    detectedYear = parseInt(fallbackYear, 10) || 2026;
   }
 
   // Extract Table
@@ -103,10 +135,14 @@ function parseDocxFile(input) {
     });
   });
 
+  const mIdx = KHMER_MONTHS.indexOf(detectedMonth);
+  const detectedMonthNum = mIdx >= 0 ? String(mIdx + 1).padStart(2, '0') : '01';
+
   return {
     success: true,
     year: detectedYear,
     month: detectedMonth,
+    monthNum: detectedMonthNum,
     title: `តារាងសម្រង់របាយការណ៍វឌ្ឍនភាពប្រចាំខែ${detectedMonth} ឆ្នាំ${detectedYear}`,
     department: 'នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន',
     items: parsedItems

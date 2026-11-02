@@ -7,3 +7,5 @@ temp_*
 Thumbs.db
 active_port.txt
 .env
+.env.local
+.env*
